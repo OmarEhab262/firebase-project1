@@ -6,6 +6,8 @@ import {
   addDoc,
   deleteDoc,
   doc,
+  query,
+  where,
 } from "firebase/firestore";
 
 // Firebase configuration
@@ -24,12 +26,34 @@ initializeApp(firebaseConfig);
 // Initialize Firestore
 const db = getFirestore();
 const colRef = collection(db, "books");
+//queries collection
+
+const biggerThan100 = query(colRef, where("price", ">", 100));
+const smallerThan100 = query(colRef, where("price", "<", 100));
 
 // Function to fetch books data
-export const getBooks = async () => {
+export const getBooks = async (queryType) => {
   try {
-    const snapshot = await getDocs(colRef);
+    let selectedQuery;
+
+    // Determine which query to use based on queryType
+    if (!queryType) {
+      selectedQuery = colRef; // Fetch all books
+    } else if (queryType === "big") {
+      selectedQuery = biggerThan100; // Fetch books with price > 100
+    } else if (queryType === "small") {
+      selectedQuery = smallerThan100; // Fetch books with price < 100
+    } else {
+      throw new Error(
+        "Invalid query type. Use 'big', 'small', or leave blank for all books."
+      );
+    }
+
+    // Fetch data
+    const snapshot = await getDocs(selectedQuery);
     const books = snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+
+    console.log("books", books);
     return books;
   } catch (error) {
     console.error("Error fetching books:", error);
