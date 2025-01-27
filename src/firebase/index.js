@@ -10,6 +10,7 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  updateDoc,
 } from "firebase/firestore";
 
 // Firebase configuration
@@ -124,6 +125,21 @@ export const searchBooks = async (searchQuery) => {
     return books;
   } catch (error) {
     console.error("Error searching books:", error);
+    throw error;
+  }
+};
+
+// Function to update a book
+export const updateBook = async (bookId, updatedBook) => {
+  try {
+    await updateDoc(doc(db, "books", bookId), {
+      title: updatedBook.title,
+      author: updatedBook.author,
+      price: Number(updatedBook.price),
+    });
+    console.log("Book updated successfully!");
+  } catch (error) {
+    console.error("Error updating book:", error);
     throw error;
   }
 };

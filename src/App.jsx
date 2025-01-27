@@ -190,7 +190,11 @@ function App() {
                     >
                       Delete
                     </button>
-                    <Modal data={book} />
+                    <Modal
+                      data={book}
+                      idBook={book.id}
+                      fetchBooks={fetchBooks}
+                    />
                   </div>
                 </div>
               </div>
