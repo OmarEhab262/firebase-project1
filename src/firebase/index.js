@@ -34,23 +34,14 @@ const smallerThan100 = query(colRef, where("price", "<", 100));
 // Function to fetch books data
 export const getBooks = async (queryType) => {
   try {
-    let selectedQuery;
-
-    // Determine which query to use based on queryType
-    if (!queryType) {
-      selectedQuery = colRef; // Fetch all books
-    } else if (queryType === "big") {
-      selectedQuery = biggerThan100; // Fetch books with price > 100
-    } else if (queryType === "small") {
-      selectedQuery = smallerThan100; // Fetch books with price < 100
-    } else {
-      throw new Error(
-        "Invalid query type. Use 'big', 'small', or leave blank for all books."
-      );
-    }
-
     // Fetch data
-    const snapshot = await getDocs(selectedQuery);
+    const snapshot = await getDocs(
+      !queryType
+        ? colRef
+        : queryType === "small"
+        ? smallerThan100
+        : biggerThan100
+    );
     const books = snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
 
     console.log("books", books);
