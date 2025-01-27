@@ -1,5 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, addDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -41,6 +48,16 @@ export const addBook = async (book) => {
     console.log("Book added successfully!");
   } catch (error) {
     console.error("Error adding book:", error);
+    throw error;
+  }
+};
+// Function to delete a book
+export const deleteBook = async (bookId) => {
+  try {
+    await deleteDoc(doc(db, "books", bookId));
+    console.log("Book deleted successfully!");
+  } catch (error) {
+    console.error("Error deleting book:", error);
     throw error;
   }
 };

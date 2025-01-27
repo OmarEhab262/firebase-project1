@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getBooks, addBook } from "./firebase/index";
+import { getBooks, addBook, deleteBook } from "./firebase/index";
 import "./App.css";
 
 function App() {
@@ -46,6 +46,14 @@ function App() {
       console.error("Error adding book:", error);
     }
   };
+  const deleteBooks = async (id) => {
+    try {
+      await deleteBook(id);
+      fetchBooks(); // Refresh the book list
+    } catch (error) {
+      console.error("Error deleting book:", error);
+    }
+  };
 
   return (
     <div className="p-4">
@@ -53,12 +61,26 @@ function App() {
       {loading ? (
         <p>Loading...</p>
       ) : books.length > 0 ? (
-        <div className="list-disc pl-6 mt-4">
+        <div className="list-disc pl-6 mt-4 flex flex-wrap justify-around gap-4">
           {books.map((book) => (
-            <div key={book.id} className="mb-2">
-              <h2 className="font-bold text-2xl">Name: {book.title}</h2>
-              <p>Author: {book.author}</p>
-              <span>Price: {book.price}$</span>
+            <div
+              key={book.id}
+              className="mb-2 flex flex-col justify-around  bg-amber-100 p-5 rounded-2xl w-[350px] h-[200px]"
+            >
+              <h3>ID: {book.id}</h3>
+              <div className="flex justify-around items-center gap-11">
+                <div>
+                  <h2 className="font-bold text-2xl">Name: {book.title}</h2>
+                  <p>Author: {book.author}</p>
+                  <span>Price: {book.price}$</span>
+                </div>
+                <button
+                  onClick={() => deleteBooks(book.id)}
+                  className="bg-red-400 hover:bg-red-300 text-white font-bold py-2 px-4 rounded cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
