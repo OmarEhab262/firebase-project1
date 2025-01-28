@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { getBooks, addBook, deleteBook, searchBooks } from "./firebase/index";
 import "./App.css";
 import Modal from "./components/Modal";
+import Signup from "./components/Signup";
+import Login from "./components/Login";
 
 function App() {
   const [books, setBooks] = useState([]); // State to hold books data
@@ -250,6 +252,8 @@ function App() {
           Add Book
         </button>
       </form>
+      <Signup />
+      <Login />
     </div>
   );
 }

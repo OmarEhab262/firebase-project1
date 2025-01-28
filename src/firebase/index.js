@@ -1,3 +1,4 @@
+// Import Firebase modules
 import { initializeApp } from "firebase/app";
 import {
   getFirestore,
@@ -12,6 +13,12 @@ import {
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -26,38 +33,44 @@ const firebaseConfig = {
 // Initialize Firebase
 initializeApp(firebaseConfig);
 
-// Initialize Firestore
+// Initialize Firestore and Auth
 const db = getFirestore();
+const auth = getAuth();
+
+// Reference to the "books" collection
 const colRef = collection(db, "books");
 
-// Queries collection
+// Query definitions
 const biggerThan100 = query(
   colRef,
   where("price", ">", 100),
   orderBy("createAt", "desc")
-);
+); // Books with price > 100, sorted by createAt
 const smallerThan100 = query(
   colRef,
   where("price", "<", 100),
   orderBy("createAt", "desc")
-);
-const allBooksSorted = query(colRef, orderBy("createAt", "desc"));
+); // Books with price < 100, sorted by createAt
+const allBooksSorted = query(colRef, orderBy("createAt", "desc")); // All books, sorted by createAt
 
-// Function to fetch books data
+/**
+ * Fetch books from Firestore based on query type
+ * @param {string|null} queryType - Type of query ("small" for books < 100, otherwise books > 100)
+ * @returns {Promise<Array>} - Array of book objects
+ */
 export const getBooks = async (queryType) => {
   try {
-    // Select query based on queryType
-    const selectedQuery = !queryType
-      ? allBooksSorted // All books sorted by createAt
-      : queryType === "small"
-      ? smallerThan100 // Books with price < 100 sorted by createAt
-      : biggerThan100; // Books with price > 100 sorted by createAt
+    const selectedQuery =
+      !queryType || queryType === "all"
+        ? allBooksSorted
+        : queryType === "small"
+        ? smallerThan100
+        : biggerThan100;
 
-    // Fetch data
     const snapshot = await getDocs(selectedQuery);
     const books = snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
 
-    console.log("books", books);
+    console.log("Fetched books:", books);
     return books;
   } catch (error) {
     console.error("Error fetching books:", error);
@@ -65,7 +78,10 @@ export const getBooks = async (queryType) => {
   }
 };
 
-// Function to add a new book
+/**
+ * Add a new book to Firestore
+ * @param {Object} book - Book details (title, author, price)
+ */
 export const addBook = async (book) => {
   try {
     await addDoc(colRef, {
@@ -81,7 +97,10 @@ export const addBook = async (book) => {
   }
 };
 
-// Function to delete a book
+/**
+ * Delete a book from Firestore
+ * @param {string} bookId - ID of the book to delete
+ */
 export const deleteBook = async (bookId) => {
   try {
     await deleteDoc(doc(db, "books", bookId));
@@ -92,7 +111,11 @@ export const deleteBook = async (bookId) => {
   }
 };
 
-// Function to search books based on title
+/**
+ * Search for books by title
+ * @param {string} searchQuery - Title to search for
+ * @returns {Promise<Array>} - Array of book objects matching the query
+ */
 export const searchBooks = async (searchQuery) => {
   try {
     if (!searchQuery || searchQuery.trim() === "") {
@@ -100,14 +123,12 @@ export const searchBooks = async (searchQuery) => {
       return [];
     }
 
-    // Create a query to search for books where the title matches the searchQuery
     const searchTitleQuery = query(
       colRef,
       where("title", ">=", searchQuery),
       where("title", "<=", searchQuery + "\uf8ff")
     );
 
-    // Execute the query
     const snapshot = await getDocs(searchTitleQuery);
 
     if (snapshot.empty) {
@@ -115,13 +136,12 @@ export const searchBooks = async (searchQuery) => {
       return [];
     }
 
-    // Map the results to get the book data
     const books = snapshot.docs.map((doc) => ({
       ...doc.data(),
       id: doc.id,
     }));
 
-    console.log("Search results:", books); // Make sure this shows in the console
+    console.log("Search results:", books);
     return books;
   } catch (error) {
     console.error("Error searching books:", error);
@@ -129,7 +149,11 @@ export const searchBooks = async (searchQuery) => {
   }
 };
 
-// Function to update a book
+/**
+ * Update a book in Firestore
+ * @param {string} bookId - ID of the book to update
+ * @param {Object} updatedBook - Updated book details (title, author, price)
+ */
 export const updateBook = async (bookId, updatedBook) => {
   try {
     await updateDoc(doc(db, "books", bookId), {
@@ -140,6 +164,49 @@ export const updateBook = async (bookId, updatedBook) => {
     console.log("Book updated successfully!");
   } catch (error) {
     console.error("Error updating book:", error);
+    throw error;
+  }
+};
+
+/**
+ * Sign up a new user
+ * @param {string} email - User email
+ * @param {string} password - User password
+ */
+export const signup = async (email, password) => {
+  try {
+    const user = await createUserWithEmailAndPassword(auth, email, password);
+    console.log("User signed up successfully!", user);
+  } catch (error) {
+    console.error("Error signing up:", error);
+    throw error;
+  }
+};
+
+/**
+ * Log in an existing user
+ * @param {string} email - User email
+ * @param {string} password - User password
+ */
+export const login = async (email, password) => {
+  try {
+    const user = await signInWithEmailAndPassword(auth, email, password);
+    console.log("User logged in successfully!", user);
+  } catch (error) {
+    console.error("Error logging in:", error);
+    throw error;
+  }
+};
+
+/**
+ * Log out the current user
+ */
+export const logout = async () => {
+  try {
+    await signOut(auth);
+    console.log("User logged out successfully!");
+  } catch (error) {
+    console.error("Error logging out:", error);
     throw error;
   }
 };
