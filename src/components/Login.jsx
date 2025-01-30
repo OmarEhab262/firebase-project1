@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { login, logout } from "../firebase";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "../firebase";
 
 const Login = () => {
-  // State to manage form data
+  const navigate = useNavigate();
+
+  // ✅ State لإدارة بيانات النموذج
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  // Handle input changes
+  // ✅ تحديث بيانات الإدخال عند تغييرها
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -17,18 +20,15 @@ const Login = () => {
     });
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
+  // ✅ معالجة تسجيل الدخول
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form Data Submitted:", formData);
-    login(formData.email, formData.password);
-    // You can add your form submission logic here (e.g., API call)
-  };
-
-  // Handle logout button click
-  const handleLogout = (e) => {
-    e.preventDefault();
-    logout();
+    try {
+      await login(formData.email, formData.password);
+      navigate("/"); // ✅ إعادة التوجيه بعد تسجيل الدخول
+    } catch (error) {
+      console.error("Login Error:", error.message);
+    }
   };
 
   return (
@@ -70,18 +70,16 @@ const Login = () => {
               required
             />
           </div>
+          <div className="my-3">
+            <Link to="/signup" className="text-blue-500 text-sm my-10">
+              Don&apos;t have an account?
+            </Link>
+          </div>
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Log In
-          </button>
-          <button
-            onClick={handleLogout}
-            type="submit"
-            className="w-full my-4 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            Log Out
           </button>
         </form>
       </div>

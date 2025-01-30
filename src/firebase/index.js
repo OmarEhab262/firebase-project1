@@ -190,10 +190,25 @@ export const signup = async (email, password) => {
  */
 export const login = async (email, password) => {
   try {
-    const user = await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    const user = userCredential.user;
+
     console.log("User logged in successfully!", user);
+
+    // تخزين التوكن وبيانات المستخدم في localStorage
+    localStorage.setItem("token", user.accessToken);
+    localStorage.setItem(
+      "user",
+      JSON.stringify({ email: user.email, uid: user.uid })
+    );
+
+    return user; // إرجاع بيانات المستخدم في حالة الحاجة إليها
   } catch (error) {
-    console.error("Error logging in:", error);
+    console.error("Error logging in:", error.message);
     throw error;
   }
 };
@@ -204,6 +219,8 @@ export const login = async (email, password) => {
 export const logout = async () => {
   try {
     await signOut(auth);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     console.log("User logged out successfully!");
   } catch (error) {
     console.error("Error logging out:", error);

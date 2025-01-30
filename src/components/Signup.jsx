@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signup } from "../firebase";
+import { Link } from "react-router-dom";
 
 const Signup = () => {
   // State to manage form data
@@ -24,6 +25,10 @@ const Signup = () => {
     signup(formData.email, formData.password);
     // You can add your form submission logic here (e.g., API call)
   };
+  useEffect(() => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -65,6 +70,11 @@ const Signup = () => {
               placeholder="Enter your password"
               required
             />
+          </div>
+          <div className="my-3">
+            <Link to="/login" className="text-blue-500 text-sm my-10">
+              Already have an account
+            </Link>
           </div>
           <button
             type="submit"
